@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from part2 import schema_pb2 as part2_dot_schema__pb2
+import schema_pb2 as schema__pb2
 
 
 class ChatHandlerStub(object):
@@ -17,33 +17,33 @@ class ChatHandlerStub(object):
         """
         self.Create = channel.unary_unary(
                 '/chat.ChatHandler/Create',
-                request_serializer=part2_dot_schema__pb2.Credentials.SerializeToString,
-                response_deserializer=part2_dot_schema__pb2.BasicResponse.FromString,
+                request_serializer=schema__pb2.Credentials.SerializeToString,
+                response_deserializer=schema__pb2.BasicResponse.FromString,
                 )
         self.Login = channel.unary_unary(
                 '/chat.ChatHandler/Login',
-                request_serializer=part2_dot_schema__pb2.Credentials.SerializeToString,
-                response_deserializer=part2_dot_schema__pb2.BasicResponse.FromString,
+                request_serializer=schema__pb2.Credentials.SerializeToString,
+                response_deserializer=schema__pb2.BasicResponse.FromString,
                 )
         self.Delete = channel.unary_unary(
                 '/chat.ChatHandler/Delete',
-                request_serializer=part2_dot_schema__pb2.BlankRequest.SerializeToString,
-                response_deserializer=part2_dot_schema__pb2.BasicResponse.FromString,
+                request_serializer=schema__pb2.BlankRequest.SerializeToString,
+                response_deserializer=schema__pb2.BasicResponse.FromString,
                 )
         self.Send = channel.unary_unary(
                 '/chat.ChatHandler/Send',
-                request_serializer=part2_dot_schema__pb2.SendRequest.SerializeToString,
-                response_deserializer=part2_dot_schema__pb2.BasicResponse.FromString,
+                request_serializer=schema__pb2.SendRequest.SerializeToString,
+                response_deserializer=schema__pb2.BasicResponse.FromString,
                 )
         self.Flush = channel.unary_unary(
                 '/chat.ChatHandler/Flush',
-                request_serializer=part2_dot_schema__pb2.BlankRequest.SerializeToString,
-                response_deserializer=part2_dot_schema__pb2.FlushResponse.FromString,
+                request_serializer=schema__pb2.BlankRequest.SerializeToString,
+                response_deserializer=schema__pb2.FlushResponse.FromString,
                 )
         self.List = channel.unary_unary(
                 '/chat.ChatHandler/List',
-                request_serializer=part2_dot_schema__pb2.BlankRequest.SerializeToString,
-                response_deserializer=part2_dot_schema__pb2.ListResponse.FromString,
+                request_serializer=schema__pb2.BlankRequest.SerializeToString,
+                response_deserializer=schema__pb2.ListResponse.FromString,
                 )
 
 
@@ -92,33 +92,33 @@ def add_ChatHandlerServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Create': grpc.unary_unary_rpc_method_handler(
                     servicer.Create,
-                    request_deserializer=part2_dot_schema__pb2.Credentials.FromString,
-                    response_serializer=part2_dot_schema__pb2.BasicResponse.SerializeToString,
+                    request_deserializer=schema__pb2.Credentials.FromString,
+                    response_serializer=schema__pb2.BasicResponse.SerializeToString,
             ),
             'Login': grpc.unary_unary_rpc_method_handler(
                     servicer.Login,
-                    request_deserializer=part2_dot_schema__pb2.Credentials.FromString,
-                    response_serializer=part2_dot_schema__pb2.BasicResponse.SerializeToString,
+                    request_deserializer=schema__pb2.Credentials.FromString,
+                    response_serializer=schema__pb2.BasicResponse.SerializeToString,
             ),
             'Delete': grpc.unary_unary_rpc_method_handler(
                     servicer.Delete,
-                    request_deserializer=part2_dot_schema__pb2.BlankRequest.FromString,
-                    response_serializer=part2_dot_schema__pb2.BasicResponse.SerializeToString,
+                    request_deserializer=schema__pb2.BlankRequest.FromString,
+                    response_serializer=schema__pb2.BasicResponse.SerializeToString,
             ),
             'Send': grpc.unary_unary_rpc_method_handler(
                     servicer.Send,
-                    request_deserializer=part2_dot_schema__pb2.SendRequest.FromString,
-                    response_serializer=part2_dot_schema__pb2.BasicResponse.SerializeToString,
+                    request_deserializer=schema__pb2.SendRequest.FromString,
+                    response_serializer=schema__pb2.BasicResponse.SerializeToString,
             ),
             'Flush': grpc.unary_unary_rpc_method_handler(
                     servicer.Flush,
-                    request_deserializer=part2_dot_schema__pb2.BlankRequest.FromString,
-                    response_serializer=part2_dot_schema__pb2.FlushResponse.SerializeToString,
+                    request_deserializer=schema__pb2.BlankRequest.FromString,
+                    response_serializer=schema__pb2.FlushResponse.SerializeToString,
             ),
             'List': grpc.unary_unary_rpc_method_handler(
                     servicer.List,
-                    request_deserializer=part2_dot_schema__pb2.BlankRequest.FromString,
-                    response_serializer=part2_dot_schema__pb2.ListResponse.SerializeToString,
+                    request_deserializer=schema__pb2.BlankRequest.FromString,
+                    response_serializer=schema__pb2.ListResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -143,8 +143,8 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Create',
-            part2_dot_schema__pb2.Credentials.SerializeToString,
-            part2_dot_schema__pb2.BasicResponse.FromString,
+            schema__pb2.Credentials.SerializeToString,
+            schema__pb2.BasicResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -160,8 +160,8 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Login',
-            part2_dot_schema__pb2.Credentials.SerializeToString,
-            part2_dot_schema__pb2.BasicResponse.FromString,
+            schema__pb2.Credentials.SerializeToString,
+            schema__pb2.BasicResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -177,8 +177,8 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Delete',
-            part2_dot_schema__pb2.BlankRequest.SerializeToString,
-            part2_dot_schema__pb2.BasicResponse.FromString,
+            schema__pb2.BlankRequest.SerializeToString,
+            schema__pb2.BasicResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -194,8 +194,8 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Send',
-            part2_dot_schema__pb2.SendRequest.SerializeToString,
-            part2_dot_schema__pb2.BasicResponse.FromString,
+            schema__pb2.SendRequest.SerializeToString,
+            schema__pb2.BasicResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -211,8 +211,8 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Flush',
-            part2_dot_schema__pb2.BlankRequest.SerializeToString,
-            part2_dot_schema__pb2.FlushResponse.FromString,
+            schema__pb2.BlankRequest.SerializeToString,
+            schema__pb2.FlushResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -228,7 +228,7 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/List',
-            part2_dot_schema__pb2.BlankRequest.SerializeToString,
-            part2_dot_schema__pb2.ListResponse.FromString,
+            schema__pb2.BlankRequest.SerializeToString,
+            schema__pb2.ListResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

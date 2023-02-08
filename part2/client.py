@@ -1,13 +1,31 @@
-# echo-client.py
+import logging
 
-import socket
+import grpc
+import schema_pb2
+import schema_pb2_grpc
 
-HOST = "172.58.222.166"  # The server's hostname or IP address
-PORT = 65432  # The port used by the server
+def handle_create(stub: schema_pb2_grpc.ChatHandlerStub):
+    username = input("Enter a username: ")
+    if len(username) <= 0:
+        print("Error: username cannot be empty")
+        return
+    stub.Create(schema_pb2.Credentials(userId=username))
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    s.sendall(b"Hello, world")
-    data = s.recv(1024)
+def parse_input(input_str):
+    if input_str == "create":
+        return handle_create
+    return None
 
-print(f"Received {data!r}")
+def run():
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = schema_pb2_grpc.ChatHandlerStub(channel)
+        while True:
+            raw_input = input("Enter a command: ")
+            handler = parse_input(raw_input)
+            if handler:
+                handler(stub)
+
+
+if __name__ == '__main__':
+    logging.basicConfig()
+    run()
