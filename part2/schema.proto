@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package chat;
+
+message Account {
+  required string userId = 1;
+  required bool isLoggedIn = 2;
+}
+
+message Message {
+  required string authorId = 1;
+  required string recipientId = 2;
+  required string text = 3;
+}
