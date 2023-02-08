@@ -20,6 +20,8 @@ message Message {
   string text = 3;
 }
 
+message BlankRequest { }
+
 // Request for sending a message
 message SendRequest {
   string recipientId = 1;
@@ -50,8 +52,8 @@ message FlushResponse {
 service ChatHandler {
   rpc Create(Credentials) returns (BasicResponse);
   rpc Login(Credentials) returns (BasicResponse);
-  rpc Delete() returns (BasicResponse);
-  rpc Send(SendRequest) return (BasicResponse);
-  rpc Flush() return (FlushResponse);
-  rpc List() return (ListResponse);
+  rpc Delete(BlankRequest) returns (BasicResponse);
+  rpc Send(SendRequest) returns (BasicResponse);
+  rpc Flush(BlankRequest) returns (FlushResponse);
+  rpc List(BlankRequest) returns (ListResponse);
 }
