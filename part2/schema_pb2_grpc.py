@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from part2 import schema_pb2 as part2_dot_schema__pb2
+import schema_pb2 as part2_dot_schema__pb2
 
 
 class ChatHandlerStub(object):
