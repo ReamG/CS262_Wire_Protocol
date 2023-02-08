@@ -18,21 +18,22 @@ class ChatHandlerServicer(object):
     def Create(self, request, context):
         for user in users:
             if request.userId == user.userId:
-                return  schema_pb2.BasicResponse(False, "userID already exists")
+                return  schema_pb2.BasicResponse(success=False, errorMessage="userID already exists")
         
-        new_account = schema_pb2.Account("request.userId",True)
+        new_account = schema_pb2.Account(userId=request.userId,isLoggedIn=True)
         users.append(new_account)
         msgs_cache[new_account.userId] = []
+        print(users)
 
-        return schema_pb2.BasicResponse(True, "")
+        return schema_pb2.BasicResponse(success=True, errorMessage="")
     
     def Login(self, request, context):
         """Missing associated documentation comment in .proto file."""
         for user in users:
             if request.userId == user.userId:
                 user.isLoggedIn = True
-                return schema_pb2.BasicResponse(True, "")
-        return schema_pb2.BasicResponse(False, "UserId does not exist. Try creating an account.")
+                return schema_pb2.BasicResponse(success=True, errorMessage="")
+        return schema_pb2.BasicResponse(success=False, errorMessage="UserId does not exist. Try creating an account.")
 
     def Delete(self, request, context):
         """Missing associated documentation comment in .proto file."""
