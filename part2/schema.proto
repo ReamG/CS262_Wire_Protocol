@@ -2,13 +2,56 @@ syntax = "proto3";
 
 package chat;
 
-message Account {
-  required string userId = 1;
-  required bool isLoggedIn = 2;
+// Used for identifying a specific user in a request
+message Credentials {
+  string userId = 1;
 }
 
+// Used for sending back an account
+message Account {
+  string userId = 1;
+  bool isLoggedIn = 2;
+}
+
+// Used for sending a message
 message Message {
-  required string authorId = 1;
-  required string recipientId = 2;
-  required string text = 3;
+  string authorId = 1;
+  string recipientId = 2;
+  string text = 3;
+}
+
+// Request for sending a message
+message SendRequest {
+  string recipientId = 1;
+  string message = 2;
+}
+
+// Default response information
+message BasicResponse {
+  bool success = 1;
+  string errorMessage = 2;
+}
+
+// Response for listing accounts
+message ListResponse {
+  bool success = 1;
+  string errorMessage = 2;
+  repeated Account accounts = 3;
+}
+
+// Response for flushing messages
+message FlushResponse {
+  bool success = 1;
+  string errorMessage = 2;
+  repeated Message queuedMessages = 3;
+}
+
+// The main service
+service ChatHandler {
+  rpc Create(Credentials) returns (BasicResponse);
+  rpc Login(Credentials) returns (BasicResponse);
+  rpc Delete() returns (BasicResponse);
+  rpc Send(SendRequest) return (BasicResponse);
+  rpc Flush() return (FlushResponse);
+  rpc List() return (ListResponse);
 }
