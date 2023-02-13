@@ -27,8 +27,13 @@ class ChatHandlerStub(object):
                 )
         self.Delete = channel.unary_unary(
                 '/chat.ChatHandler/Delete',
-                request_serializer=schema__pb2.BlankRequest.SerializeToString,
+                request_serializer=schema__pb2.Credentials.SerializeToString,
                 response_deserializer=schema__pb2.BasicResponse.FromString,
+                )
+        self.Subscribe = channel.unary_stream(
+                '/chat.ChatHandler/Subscribe',
+                request_serializer=schema__pb2.Credentials.SerializeToString,
+                response_deserializer=schema__pb2.Message.FromString,
                 )
         self.Send = channel.unary_unary(
                 '/chat.ChatHandler/Send',
@@ -42,7 +47,7 @@ class ChatHandlerStub(object):
                 )
         self.List = channel.unary_unary(
                 '/chat.ChatHandler/List',
-                request_serializer=schema__pb2.BlankRequest.SerializeToString,
+                request_serializer=schema__pb2.ListRequest.SerializeToString,
                 response_deserializer=schema__pb2.ListResponse.FromString,
                 )
 
@@ -64,6 +69,12 @@ class ChatHandlerServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def Delete(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Subscribe(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -102,8 +113,13 @@ def add_ChatHandlerServicer_to_server(servicer, server):
             ),
             'Delete': grpc.unary_unary_rpc_method_handler(
                     servicer.Delete,
-                    request_deserializer=schema__pb2.BlankRequest.FromString,
+                    request_deserializer=schema__pb2.Credentials.FromString,
                     response_serializer=schema__pb2.BasicResponse.SerializeToString,
+            ),
+            'Subscribe': grpc.unary_stream_rpc_method_handler(
+                    servicer.Subscribe,
+                    request_deserializer=schema__pb2.Credentials.FromString,
+                    response_serializer=schema__pb2.Message.SerializeToString,
             ),
             'Send': grpc.unary_unary_rpc_method_handler(
                     servicer.Send,
@@ -117,7 +133,7 @@ def add_ChatHandlerServicer_to_server(servicer, server):
             ),
             'List': grpc.unary_unary_rpc_method_handler(
                     servicer.List,
-                    request_deserializer=schema__pb2.BlankRequest.FromString,
+                    request_deserializer=schema__pb2.ListRequest.FromString,
                     response_serializer=schema__pb2.ListResponse.SerializeToString,
             ),
     }
@@ -177,8 +193,25 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Delete',
-            schema__pb2.BlankRequest.SerializeToString,
+            schema__pb2.Credentials.SerializeToString,
             schema__pb2.BasicResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Subscribe(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/chat.ChatHandler/Subscribe',
+            schema__pb2.Credentials.SerializeToString,
+            schema__pb2.Message.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -228,7 +261,7 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/List',
-            schema__pb2.BlankRequest.SerializeToString,
+            schema__pb2.ListRequest.SerializeToString,
             schema__pb2.ListResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

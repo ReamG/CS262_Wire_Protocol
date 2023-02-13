@@ -22,6 +22,10 @@ message Message {
 
 message BlankRequest { }
 
+message ListRequest {
+  string wildcard = 1;
+}
+
 // Request for sending a message
 message SendRequest {
   string recipientId = 1;
@@ -52,8 +56,9 @@ message FlushResponse {
 service ChatHandler {
   rpc Create(Credentials) returns (BasicResponse);
   rpc Login(Credentials) returns (BasicResponse);
-  rpc Delete(BlankRequest) returns (BasicResponse);
+  rpc Delete(Credentials) returns (BasicResponse);
+  rpc Subscribe(Credentials) returns (stream Message);
   rpc Send(SendRequest) returns (BasicResponse);
   rpc Flush(BlankRequest) returns (FlushResponse);
-  rpc List(BlankRequest) returns (ListResponse);
+  rpc List(ListRequest) returns (ListResponse);
 }

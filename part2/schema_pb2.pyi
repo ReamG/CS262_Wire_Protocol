@@ -41,6 +41,12 @@ class FlushResponse(_message.Message):
     success: bool
     def __init__(self, success: bool = ..., errorMessage: _Optional[str] = ..., queuedMessages: _Optional[_Iterable[_Union[Message, _Mapping]]] = ...) -> None: ...
 
+class ListRequest(_message.Message):
+    __slots__ = ["wildcard"]
+    WILDCARD_FIELD_NUMBER: _ClassVar[int]
+    wildcard: str
+    def __init__(self, wildcard: _Optional[str] = ...) -> None: ...
+
 class ListResponse(_message.Message):
     __slots__ = ["accounts", "errorMessage", "success"]
     ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
