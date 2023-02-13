@@ -37,7 +37,7 @@ class ChatHandlerStub(object):
                 )
         self.Send = channel.unary_unary(
                 '/chat.ChatHandler/Send',
-                request_serializer=schema__pb2.SendRequest.SerializeToString,
+                request_serializer=schema__pb2.Message.SerializeToString,
                 response_deserializer=schema__pb2.BasicResponse.FromString,
                 )
         self.Flush = channel.unary_unary(
@@ -123,7 +123,7 @@ def add_ChatHandlerServicer_to_server(servicer, server):
             ),
             'Send': grpc.unary_unary_rpc_method_handler(
                     servicer.Send,
-                    request_deserializer=schema__pb2.SendRequest.FromString,
+                    request_deserializer=schema__pb2.Message.FromString,
                     response_serializer=schema__pb2.BasicResponse.SerializeToString,
             ),
             'Flush': grpc.unary_unary_rpc_method_handler(
@@ -227,7 +227,7 @@ class ChatHandler(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Send',
-            schema__pb2.SendRequest.SerializeToString,
+            schema__pb2.Message.SerializeToString,
             schema__pb2.BasicResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

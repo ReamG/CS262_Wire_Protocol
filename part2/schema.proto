@@ -26,12 +26,6 @@ message ListRequest {
   string wildcard = 1;
 }
 
-// Request for sending a message
-message SendRequest {
-  string recipientId = 1;
-  string message = 2;
-}
-
 // Default response information
 message BasicResponse {
   bool success = 1;
@@ -58,7 +52,7 @@ service ChatHandler {
   rpc Login(Credentials) returns (BasicResponse);
   rpc Delete(Credentials) returns (BasicResponse);
   rpc Subscribe(Credentials) returns (stream Message);
-  rpc Send(SendRequest) returns (BasicResponse);
+  rpc Send(Message) returns (BasicResponse);
   rpc Flush(BlankRequest) returns (FlushResponse);
   rpc List(ListRequest) returns (ListResponse);
 }

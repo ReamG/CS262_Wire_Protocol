@@ -66,11 +66,3 @@ class Message(_message.Message):
     recipientId: str
     text: str
     def __init__(self, authorId: _Optional[str] = ..., recipientId: _Optional[str] = ..., text: _Optional[str] = ...) -> None: ...
-
-class SendRequest(_message.Message):
-    __slots__ = ["message", "recipientId"]
-    MESSAGE_FIELD_NUMBER: _ClassVar[int]
-    RECIPIENTID_FIELD_NUMBER: _ClassVar[int]
-    message: str
-    recipientId: str
-    def __init__(self, recipientId: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
