@@ -40,11 +40,6 @@ class ChatHandlerStub(object):
                 request_serializer=schema__pb2.Message.SerializeToString,
                 response_deserializer=schema__pb2.BasicResponse.FromString,
                 )
-        self.Flush = channel.unary_unary(
-                '/chat.ChatHandler/Flush',
-                request_serializer=schema__pb2.BlankRequest.SerializeToString,
-                response_deserializer=schema__pb2.FlushResponse.FromString,
-                )
         self.List = channel.unary_unary(
                 '/chat.ChatHandler/List',
                 request_serializer=schema__pb2.ListRequest.SerializeToString,
@@ -86,12 +81,6 @@ class ChatHandlerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Flush(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def List(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -125,11 +114,6 @@ def add_ChatHandlerServicer_to_server(servicer, server):
                     servicer.Send,
                     request_deserializer=schema__pb2.Message.FromString,
                     response_serializer=schema__pb2.BasicResponse.SerializeToString,
-            ),
-            'Flush': grpc.unary_unary_rpc_method_handler(
-                    servicer.Flush,
-                    request_deserializer=schema__pb2.BlankRequest.FromString,
-                    response_serializer=schema__pb2.FlushResponse.SerializeToString,
             ),
             'List': grpc.unary_unary_rpc_method_handler(
                     servicer.List,
@@ -229,23 +213,6 @@ class ChatHandler(object):
         return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Send',
             schema__pb2.Message.SerializeToString,
             schema__pb2.BasicResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def Flush(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/chat.ChatHandler/Flush',
-            schema__pb2.BlankRequest.SerializeToString,
-            schema__pb2.FlushResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

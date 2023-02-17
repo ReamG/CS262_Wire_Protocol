@@ -31,16 +31,6 @@ class Credentials(_message.Message):
     user_id: str
     def __init__(self, user_id: _Optional[str] = ...) -> None: ...
 
-class FlushResponse(_message.Message):
-    __slots__ = ["error_message", "queuedMessages", "success"]
-    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
-    QUEUEDMESSAGES_FIELD_NUMBER: _ClassVar[int]
-    SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    error_message: str
-    queuedMessages: _containers.RepeatedCompositeFieldContainer[Message]
-    success: bool
-    def __init__(self, success: bool = ..., error_message: _Optional[str] = ..., queuedMessages: _Optional[_Iterable[_Union[Message, _Mapping]]] = ...) -> None: ...
-
 class ListRequest(_message.Message):
     __slots__ = ["wildcard"]
     WILDCARD_FIELD_NUMBER: _ClassVar[int]

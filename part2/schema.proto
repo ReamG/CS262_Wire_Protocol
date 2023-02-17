@@ -39,13 +39,6 @@ message ListResponse {
   repeated Account accounts = 3;
 }
 
-// Response for flushing messages
-message FlushResponse {
-  bool success = 1;
-  string error_message = 2;
-  repeated Message queuedMessages = 3;
-}
-
 // The main service
 service ChatHandler {
   rpc Create(Credentials) returns (BasicResponse);
@@ -53,6 +46,5 @@ service ChatHandler {
   rpc Delete(Credentials) returns (BasicResponse);
   rpc Subscribe(Credentials) returns (stream Message);
   rpc Send(Message) returns (BasicResponse);
-  rpc Flush(BlankRequest) returns (FlushResponse);
   rpc List(ListRequest) returns (ListResponse);
 }
