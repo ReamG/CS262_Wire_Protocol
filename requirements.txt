@@ -1,1 +1,6 @@
+beautifulsoup4==4.11.2
+google==3.0.0
 grpcio==1.51.1
+grpcio-tools==1.51.1
+protobuf==4.22.0
+soupsieve==2.4

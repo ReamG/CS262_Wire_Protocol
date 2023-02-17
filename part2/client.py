@@ -12,7 +12,7 @@ def print_msg_box(msg, indent=1, width=None, title=None):
     """Print message-box with optional title."""
     chunk_size = 64
     msg.text = "Message: " + msg.text
-    lines = [ "From: " + msg.authorId ] + [ msg.text[i:i+chunk_size] for i in range(0, len(msg.text), chunk_size) ]
+    lines = [ "From: " + msg.author_id ] + [ msg.text[i:i+chunk_size] for i in range(0, len(msg.text), chunk_size) ]
     space = " " * indent
     if not width:
         width = max(map(len, lines))
@@ -22,65 +22,71 @@ def print_msg_box(msg, indent=1, width=None, title=None):
         box += f'║{space}{"-" * len(title):<{width}}{space}║\n'  # underscore
     box += ''.join([f'║{space}{line:<{width}}{space}║\n' for line in lines])
     box += f'╚{"═" * (width + indent * 2)}╝'  # lower_border
-    erase = '\x1b[1A\x1b[0G\x1b[2K'
-    num_erase = box.count("\n") + 2
-    print(erase * num_erase + "\n" + box + "\x1b[1E\x1b[1D]")
+    print("\n" + box)
+
+# Print an error string in red color
+def print_error(msg):
+    print("\033[91m{}\033[00m".format(msg))
+
+# Print a success string in green color
+def print_success(msg):
+    print("\033[92m{}\033[00m".format(msg))
 
 class Client:
     def __init__(self):
         self.executor = ThreadPoolExecutor()
-        self.userId = ""
+        self.user_id = ""
         self.stub = None
     
     def is_logged_in(self):
-        return len(self.userId) > 0
+        return len(self.user_id) > 0
     
     def watch_messages(self, resp_iter):
         try:
             for resp in resp_iter:
                 print_msg_box(resp)
         except Exception as e:
-            print("Error: Something has gone wrong. You may need to restart your client")
+            print_error("Error: Something has gone wrong. You may need to restart your client")
     
     def subscribe(self):
         if not self.is_logged_in():
-            print("Error: Something has gone wrong. You may need to restart your client")
+            print_error("Error: Something has gone wrong. You may need to restart your client")
             return
-        resp_iter = self.stub.Subscribe(schema.Credentials(userId=self.userId))
+        resp_iter = self.stub.Subscribe(schema.Credentials(user_id=self.user_id))
         self.executor.submit(self.watch_messages, resp_iter)
 
     def handle_create(self):
         if self.is_logged_in():
-            print("You're already logged in as {}.".format(self.userId))
-            print("Restart the client to create a different account")
+            print_error("You're already logged in as {}.".format(self.user_id))
+            print_error("Restart the client to create a different account")
             return
         username = input("> Enter a username: ")
         if len(username) <= 0:
-            print("Error: username cannot be empty")
+            print_error("Error: username cannot be empty")
             return
-        resp = self.stub.Create(schema.Credentials(userId=username))
+        resp = self.stub.Create(schema.Credentials(user_id=username))
         if not resp.success:
-            print("Error: {}".format(resp.errorMessage))
+            print_error("Error: {}".format(resp.error_message))
             return
-        print("Success! Account created")
-        self.userId = username
+        print_success("Success! Account created")
+        self.user_id = username
         self.subscribe()
 
     def handle_login(self):
         if self.is_logged_in():
-            print("You're already logged in as {}.".format(self.userId))
-            print("Restart the client to login to a different account")
+            print_error("You're already logged in as {}.".format(self.user_id))
+            print_error("Restart the client to login to a different account")
             return
         username = input("> Enter a username: ")
         if len(username) <= 0:
-            print("Error: username cannot be empty")
+            print_error("Error: username cannot be empty")
             return
-        resp = self.stub.Login(schema.Credentials(userId=username))
+        resp = self.stub.Login(schema.Credentials(user_id=username))
         if not resp.success:
-            print("Error: {}".format(resp.errorMessage))
+            print_error("Error: {}".format(resp.error_message))
             return
-        print("Success! Logged in as {}".format(username))
-        self.userId = username
+        print_success("Success! Logged in as {}".format(username))
+        self.user_id = username
         self.subscribe()
 
     def handle_delete(self):
@@ -90,50 +96,53 @@ class Client:
         verify = input("Are you sure you want to delete your account? (y/n): ")
         if not verify == "y":
             return
-        resp = self.stub.Delete(schema.Credentials(userId=self.userId))
+        resp = self.stub.Delete(schema.Credentials(user_id=self.user_id))
         if resp.success:
-            print("Success! Account deleted")
-            self.userId = ""
+            print_success("Success! Account deleted")
+            self.user_id = ""
         else:
-            print("Error: {}".format(resp.errorMessage))
+            print_error("Error: {}".format(resp.error_message))
 
     def handle_list(self):
         wildcard = input("> Input a text filter: ")
         resp = self.stub.List(schema.ListRequest(wildcard=wildcard))
         if not resp.success:
-            print("Error: {}".format(resp.errorMessage))
+            print_error("Error: {}".format(resp.error_message))
             return
         print("{} users matching '{}'".format(len(resp.accounts), wildcard))
         for user in resp.accounts:
-            print(user.userId)
+            print(user.user_id)
 
     def handle_send(self):
         recipient = input("> Recipient id: ")
         if len(recipient) <= 0:
-            print("Error: Recipient cannot be empty")
+            print_error("Error: Recipient cannot be empty")
             return
         text = input("> What would you like to say?\n")
         resp = self.stub.Send(schema.Message(
-            authorId=self.userId,
-            recipientId=recipient,
+            author_id=self.user_id,
+            recipient_id=recipient,
             text=text
         ))
         if not resp.success:
-            print("Error: {}".format(resp.errorMessage))
+            print_error("Error: {}".format(resp.error_message))
             return
-        print("Success! Message sent")
+        print_success("Success! Message sent")
 
     def parse_input(self, input_str):
         if input_str == "create":
             return self.handle_create
-        if input_str == "login":
+        elif input_str == "login":
             return self.handle_login
-        if input_str == "delete":
+        elif input_str == "delete":
             return self.handle_delete
-        if input_str == "list":
+        elif input_str == "list":
             return self.handle_list
-        if input_str == "send":
+        elif input_str == "send":
             return self.handle_send
+        else:
+            print_error("Error: Invalid command")
+
         return None
 
     def run(self):

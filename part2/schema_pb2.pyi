@@ -6,40 +6,40 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Account(_message.Message):
-    __slots__ = ["isLoggedIn", "userId"]
-    ISLOGGEDIN_FIELD_NUMBER: _ClassVar[int]
-    USERID_FIELD_NUMBER: _ClassVar[int]
-    isLoggedIn: bool
-    userId: str
-    def __init__(self, userId: _Optional[str] = ..., isLoggedIn: bool = ...) -> None: ...
+    __slots__ = ["is_logged_in", "user_id"]
+    IS_LOGGED_IN_FIELD_NUMBER: _ClassVar[int]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    is_logged_in: bool
+    user_id: str
+    def __init__(self, user_id: _Optional[str] = ..., is_logged_in: bool = ...) -> None: ...
 
 class BasicResponse(_message.Message):
-    __slots__ = ["errorMessage", "success"]
-    ERRORMESSAGE_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ["error_message", "success"]
+    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    errorMessage: str
+    error_message: str
     success: bool
-    def __init__(self, success: bool = ..., errorMessage: _Optional[str] = ...) -> None: ...
+    def __init__(self, success: bool = ..., error_message: _Optional[str] = ...) -> None: ...
 
 class BlankRequest(_message.Message):
     __slots__ = []
     def __init__(self) -> None: ...
 
 class Credentials(_message.Message):
-    __slots__ = ["userId"]
-    USERID_FIELD_NUMBER: _ClassVar[int]
-    userId: str
-    def __init__(self, userId: _Optional[str] = ...) -> None: ...
+    __slots__ = ["user_id"]
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    def __init__(self, user_id: _Optional[str] = ...) -> None: ...
 
 class FlushResponse(_message.Message):
-    __slots__ = ["errorMessage", "queuedMessages", "success"]
-    ERRORMESSAGE_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ["error_message", "queuedMessages", "success"]
+    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     QUEUEDMESSAGES_FIELD_NUMBER: _ClassVar[int]
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    errorMessage: str
+    error_message: str
     queuedMessages: _containers.RepeatedCompositeFieldContainer[Message]
     success: bool
-    def __init__(self, success: bool = ..., errorMessage: _Optional[str] = ..., queuedMessages: _Optional[_Iterable[_Union[Message, _Mapping]]] = ...) -> None: ...
+    def __init__(self, success: bool = ..., error_message: _Optional[str] = ..., queuedMessages: _Optional[_Iterable[_Union[Message, _Mapping]]] = ...) -> None: ...
 
 class ListRequest(_message.Message):
     __slots__ = ["wildcard"]
@@ -48,21 +48,21 @@ class ListRequest(_message.Message):
     def __init__(self, wildcard: _Optional[str] = ...) -> None: ...
 
 class ListResponse(_message.Message):
-    __slots__ = ["accounts", "errorMessage", "success"]
+    __slots__ = ["accounts", "error_message", "success"]
     ACCOUNTS_FIELD_NUMBER: _ClassVar[int]
-    ERRORMESSAGE_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     accounts: _containers.RepeatedCompositeFieldContainer[Account]
-    errorMessage: str
+    error_message: str
     success: bool
-    def __init__(self, success: bool = ..., errorMessage: _Optional[str] = ..., accounts: _Optional[_Iterable[_Union[Account, _Mapping]]] = ...) -> None: ...
+    def __init__(self, success: bool = ..., error_message: _Optional[str] = ..., accounts: _Optional[_Iterable[_Union[Account, _Mapping]]] = ...) -> None: ...
 
 class Message(_message.Message):
-    __slots__ = ["authorId", "recipientId", "text"]
-    AUTHORID_FIELD_NUMBER: _ClassVar[int]
-    RECIPIENTID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ["author_id", "recipient_id", "text"]
+    AUTHOR_ID_FIELD_NUMBER: _ClassVar[int]
+    RECIPIENT_ID_FIELD_NUMBER: _ClassVar[int]
     TEXT_FIELD_NUMBER: _ClassVar[int]
-    authorId: str
-    recipientId: str
+    author_id: str
+    recipient_id: str
     text: str
-    def __init__(self, authorId: _Optional[str] = ..., recipientId: _Optional[str] = ..., text: _Optional[str] = ...) -> None: ...
+    def __init__(self, author_id: _Optional[str] = ..., recipient_id: _Optional[str] = ..., text: _Optional[str] = ...) -> None: ...
