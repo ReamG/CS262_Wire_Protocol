@@ -5,7 +5,6 @@ import schema_pb2 as schema
 import schema_pb2_grpc as services
 
 from concurrent.futures import ThreadPoolExecutor
-import threading
 
 # Helper function found here:
 # https://stackoverflow.com/questions/39969064/how-to-print-a-message-box-in-python

@@ -14,25 +14,23 @@ class ChatHandlerServicer(object):
 
     def __init__(self, executor):
         self.executor = executor
-        self.users = []
+        self.users = {}
         self.msgs_cache = {}
         self.user_events = {}
 
     def Create(self, request, context):
-        for user in self.users:
-            if request.userId == user.userId:
+        for userId in self.users():
+            if request.userId == userId:
                 return  schema.BasicResponse(success=False, errorMessage="userID already exists")
-        new_account = schema.Account(userId=request.userId,isLoggedIn=True)
-        self.users.append(new_account)
+        new_account = schema.Account(userId=request.userId, isLoggedIn=False)
+        self.users[new_account.userId] = new_account
         self.msgs_cache[new_account.userId] = []
         self.user_events[new_account.userId] = Event()
         return schema.BasicResponse(success=True, errorMessage="")
     
     def Login(self, request, context):
-        for user in self.users:
-            if request.userId == user.userId:
-                user.isLoggedIn = True
-                return schema.BasicResponse(success=True, errorMessage="")
+        if request.userId in self.users:
+            return schema.BasicResponse(success=True, errorMessage="")
         return schema.BasicResponse(success=False, errorMessage="UserId does not exist. Try creating an account.")
     
     def List(self, request, context):
@@ -50,15 +48,24 @@ class ChatHandlerServicer(object):
         return schema.BasicResponse(success=True, errorMessage="")
     
     def Subscribe(self, request, context):
-        print(self.user_events)
-        while True:
-            print("about to wait")
-            self.user_events[request.userId].wait()
-            self.user_events[request.userId].clear()
-            print("wait ended")
-            if len(self.msgs_cache[request.userId]) > 0:
-                yield self.msgs_cache[request.userId][0]
-                self.msgs_cache[request.userId] = self.msgs_cache[request.userId][1:]
+        def log_out():
+            self.users[request.userId].isLoggedIn = False
+            self.user_events[request.userId].set()
+        
+        context.add_callback(log_out)
+        self.users[request.userId].isLoggedIn = True
+
+        while self.users[request.userId].isLoggedIn:
+            try:
+                self.user_events[request.userId].wait()
+                self.user_events[request.userId].clear()
+                if len(self.msgs_cache[request.userId]) > 0:
+                    yield self.msgs_cache[request.userId][0]
+                    self.msgs_cache[request.userId] = self.msgs_cache[request.userId][1:]
+            except Exception as e:
+                self.users[request.userId].isLoggedIn = False
+                self.user_events[request.userId].clear()
+                break
 
     def Send(self, request, context):
         if not request.recipientId in self.msgs_cache:
