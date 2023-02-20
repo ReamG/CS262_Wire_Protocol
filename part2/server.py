@@ -30,9 +30,8 @@ class ChatHandlerServicer(object):
         Subscribe method, which sets up necessary precautions for
         sudden disconnects.
         """
-        for user_id in self.users:
-            if request.user_id == user_id:
-                return  schema.BasicResponse(success=False, error_message="user_id already exists")
+        if request.user_id in self.users:
+            return  schema.BasicResponse(success=False, error_message="user_id already exists")
         new_account = schema.Account(user_id=request.user_id, is_logged_in=True)
         self.users[new_account.user_id] = new_account
         self.msgs_cache[new_account.user_id] = []
@@ -41,10 +40,8 @@ class ChatHandlerServicer(object):
     
     def Login(self, request, context):
         """
-        Logs in an existing account. Fails if the user_id does not exist.
-        NOTE: This does not "log in" the user. That happens in the
-        Subscribe method, which sets up necessary precautions for sudden
-        disconnects.
+        Logs in an existing account. Fails if the user_id does not exist or
+        if the user is already logged in.
         """
         if request.user_id in self.users:
             if self.users[request.user_id].is_logged_in:
@@ -71,6 +68,8 @@ class ChatHandlerServicer(object):
         self.users[request.user_id].is_logged_in = False
         self.user_events[request.user_id].set()
         del self.users[request.user_id]
+        del self.msgs_cache[request.user_id]
+        del self.user_events[request.user_id]
         
         return schema.BasicResponse(success=True, error_message="")
     
@@ -118,7 +117,7 @@ class ChatHandlerServicer(object):
         """
         if not request.recipient_id in self.msgs_cache:
             return schema.BasicResponse(success=False, error_message="Recipient does not exist")
-        if not request.author_id in self.msgs_cache:
+        if not request.author_id in self.users:
             return schema.BasicResponse(success=False, error_message="Author does not exist")
         
         self.msgs_cache[request.recipient_id].append(request)
