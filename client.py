@@ -8,6 +8,7 @@ import coding
 from concurrent import futures
 
 import pdb
+import time
 
 HOST = ""  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
@@ -34,31 +35,33 @@ class Client:
     
     def check_server_health(self):
         """
-        Helper function to check if the server is up
+        Helper function to check if the server is up. Raises an error if not,
+        return True if all is good.
         """
-        pass # leaving blank for now but will probably come back and do some kind of ping pong
+        health_message = coding.marshal_health_request(schema.Request(self.user_id))
+        self.isocket.sendall(health_message)
+        data = self.isocket.recv(1024)
+        if not data or not coding.unmarshal_response(data).success:
+            raise Exception("Server is not healthy")
+        return True
+    
+    def clear(self):
+        """
+        Clear the screen
+        """
+        if self.isocket:
+            self.isocket.close()
+            self.isocket = None
+        if self.wsocket:
+            self.wsocket.close()
+            self.wsocket = None
+        self.user_id = ""
     
     def watch_messages(self):
         """
         A function that will be run in a separate thread to watch for messages
         NOTE: Takes advantage of the ThreadPoolExecutor to run this function
         """
-        self.wsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.wsocket.connect((self.host, self.port))
-
-        try:
-            message = coding.marshal_subscribe_request(schema.Request(self.user_id))
-            self.wsocket.sendall(message)
-            data = self.wsocket.recv(1024)
-            if not data:
-                raise Exception("Server closed connection")
-            resp = coding.unmarshal_response(data)
-            if not resp.success:
-                raise Exception(resp.error_message)
-        except:
-            utils.print_error("Error: Failed to listen for messages")
-            self.wsocket.close()
-            self.wsocket = None
 
         try:
             while self.wsocket:
@@ -73,11 +76,8 @@ class Client:
                     raise Exception("Server closed connection")
                 message = coding.unmarshal_response(data)
                 utils.print_msg_box(message)
-
         except Exception:
-            utils.print_error("Error: Message listener failed unexpectedly")
-            self.wsocket.close()
-            self.wsocket = None
+            self.clear()
     
     def subscribe(self):
         """
@@ -85,6 +85,20 @@ class Client:
         """
         if not self.is_logged_in() or not self.executor or not self.isocket:
             utils.print_error("Error: Something has gone wrong. You may need to restart your client")
+            return
+        self.wsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.wsocket.connect((self.host, self.port))
+        try:
+            message = coding.marshal_subscribe_request(schema.Request(self.user_id))
+            self.wsocket.sendall(message)
+            data = self.wsocket.recv(1024)
+            if not data:
+                raise Exception("Server closed connection")
+            resp = coding.unmarshal_response(data)
+            if not resp.success:
+                raise Exception(resp.error_message)
+        except:
+            self.clear()
             return
         self.executor.submit(self.watch_messages)
 
@@ -101,6 +115,9 @@ class Client:
         username = input("> Enter a username: ")
         if len(username) <= 0:
             utils.print_error("Error: username cannot be empty")
+            return
+        if len(username) > 8:
+            utils.print_error("Error: username cannot be longer than 8 characters")
             return
         message = coding.marshal_create_request(schema.Request(username))
         self.isocket.sendall(message)
@@ -235,25 +252,62 @@ class Client:
             return self.handle_send
         else:
             utils.print_error("Error: Invalid command")
-
         return None
+
+    def reconnect(self, initial=False):
+        """
+        Reconnects the socket to the server
+        NOTE: Whenever we detect that the server has failed in an unexpected way,
+        (i.e. not by sending a response with success=False) we will call this function.
+        It resets all the sockets and logs the user out, not allowing them to do
+        anything until they reconnect.
+        """
+        self.clear()
+        if not initial:
+            utils.print_error("Error: Lost connection to server.")
+            utils.print_error("You have been logged out. When/if connection is re-established, you will need to manually log back in.")
+        multiplier = 1
+        while True:
+            try:
+                self.isocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.isocket.connect((self.host, self.port))
+                break
+            except Exception:
+                utils.print_error("Error: Unable to connect socket to server.")
+                utils.print_error("Retrying in {} seconds".format(multiplier))
+                time.sleep(multiplier)
+                multiplier *= 2
+        utils.print_success("Connected to server!")
     
+    def is_in_good_health(self):
+        if not self.isocket:
+            return False
+        if self.is_logged_in() and not self.wsocket:
+            return False
+        return True
+
     def start(self):
-        self.isocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.isocket.connect((self.host, self.port))
-        try:
-            while True:
+        self.reconnect(initial=True)
+        while True:
+            try:
+                if not self.is_in_good_health():
+                    self.reconnect()
+                    continue
                 raw_input = input("> Enter a command: ")
                 handler = self.parse_input(raw_input)
                 if handler:
                     handler()
-        except:
-            if self.isocket:
-                self.isocket.close()
-                self.isocket = None
-            if self.wsocket:
-                self.wsocket.close()
-                self.wsocket = None
+            except Exception as e:
+                if e.args[0] == "Error: Server closed connection":
+                    self.clear()
+                    continue
+                if self.isocket:
+                    self.isocket.close()
+                    self.isocket = None
+                if self.wsocket:
+                    self.wsocket.close()
+                    self.wsocket = None
+                break
 
 if __name__ == "__main__":
     executor = futures.ThreadPoolExecutor()

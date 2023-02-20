@@ -28,6 +28,7 @@ class Server:
         self.msgs_cache = {}
         self.user_events = {}
         self.ACCOUNT_PAGE_SIZE = 4
+        self.alive = True
     
     def handle_create(self, request):
         """
@@ -90,6 +91,8 @@ class Server:
         conn.sendall(message)
 
         while True:
+            if not self.alive:
+                break
             if len(self.msgs_cache[request.user_id]) > 0:
                 # Confirm that the client is stil there
                 try:
@@ -131,15 +134,21 @@ class Server:
             return self.handle_list(request)
         if op == "send":
             return self.handle_send(request)
+        if op == "health":
+            return schema.Response(user_id=request.user_id, success=True, error_message="")
         return None
     
     def handle_connection(self, conn, addr):
-        print("connected by addr", addr)
+        print("Connected new client")
         user_id = ""
         while True:
+            if not self.alive:
+                break
             # Continue to receive data until the connection is closed
             try:
                 data = conn.recv(1024)
+                if not self.alive:
+                    break
                 if not data:
                     raise Exception("Client closed connection")
                 request, op = coding.unmarshal_request(data)
@@ -181,10 +190,16 @@ class Server:
             s.bind((self.host, self.port))
             s.listen()
             while True:
+                if not self.alive:
+                    break
                 conn, addr = s.accept()
                 self.executor.submit(self.handle_connection, conn, addr)
 
 if __name__ == "__main__":
-    executor = futures.ThreadPoolExecutor()
-    server = Server(host=HOST, port=PORT, executor=executor)
-    server.start()
+    try:
+        executor = futures.ThreadPoolExecutor()
+        server = Server(host=HOST, port=PORT, executor=executor)
+        server.start()
+    except KeyboardInterrupt:
+        server.alive = False
+        print("Shutting down server...")
