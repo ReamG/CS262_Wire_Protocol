@@ -11,10 +11,11 @@ class Message:
     """
     A class for messages sent from server -> client
     """
-    def __init__(self, author_id, recipient_id, text):
+    def __init__(self, author_id, recipient_id, text, success):
         self.author_id = author_id
         self.recipient_id = recipient_id
         self.text = text
+        self.success = success
 
 class Request:
     """

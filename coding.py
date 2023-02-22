@@ -9,20 +9,18 @@ OP_TO_CODE_MAP = {
     "create": "1",
     "login": "2",
     "delete": "3",
-    "subscribe": "4",
+    "get": "4",
     "send": "5",
     "list": "6",
-    "health": "7"
 }
 
 CODE_TO_OP_MAP = {
     "1": "create",
     "2": "login",
     "3": "delete",
-    "4": "subscribe",
+    "4": "get",
     "5": "send",
     "6": "list",
-    "7": "health",
 }
 
 def pad_to_length(s, length):
@@ -55,16 +53,6 @@ def post_accounts(str):
         return []
     
     return str.split(",")
-
-def marshal_health_request(req: Request):
-    """
-    Marshals a health Request into a byte string
-    """
-    return "{}{}{}".format(
-        VERSION,
-        pad_to_length(req.user_id, 8),
-        OP_TO_CODE_MAP["health"],
-    ).encode()
 
 def marshal_create_request(req: Request):
     """
@@ -118,6 +106,16 @@ def marshal_subscribe_request(req: Request):
         OP_TO_CODE_MAP["subscribe"],
     ).encode()
 
+def marshal_get_request(req: Request):
+    """
+    Marshals a subscribe Request into a byte string
+    """
+    return "{}{}{}".format(
+        VERSION,
+        pad_to_length(req.user_id, 8),
+        OP_TO_CODE_MAP["get"],
+    ).encode()
+
 def marshal_send_request(req: SendRequest):
     """
     Marshals a send Request into a byte string
@@ -139,8 +137,6 @@ def unmarshal_request(data: bytes):
     user_id = unpad(data[1:9])
     op_code = data[9]
     op = CODE_TO_OP_MAP[op_code]
-    if op == "health":
-        return Request(user_id), op
     if op == "create":
         return Request(user_id), op
     elif op == "login":
@@ -153,6 +149,8 @@ def unmarshal_request(data: bytes):
         page_num = int(page)
         return ListRequest(user_id, wildcard, page_num), op
     elif op == "subscribe":
+        return Request(user_id), op
+    elif op == "get":
         return Request(user_id), op
     elif op == "send":
         recipient_id = unpad(data[10:18])
@@ -206,7 +204,7 @@ def marshal_message_response(msg: Message):
         VERSION,
         pad_to_length(msg.recipient_id, 8),
         RESP_TO_CODE_MAP["message"],
-        1,
+        1 if msg.success else 0,
         pad_to_length("", ERROR_MESSAGE_LENGTH),
         pad_to_length(msg.author_id, 8),
         pad_to_length(msg.text, 280),
@@ -231,6 +229,6 @@ def unmarshal_response(data):
     elif resp_type == "message":
         author_id = unpad(data[11+ERROR_MESSAGE_LENGTH:11+ERROR_MESSAGE_LENGTH+8])
         text = unpad(data[11+ERROR_MESSAGE_LENGTH+8:])
-        return Message(recipient_id=user_id, author_id=author_id, text=text)
+        return Message(recipient_id=user_id, author_id=author_id, text=text, success=success)
     else:
         raise Exception("Unknown response type: {}".format(resp_type))

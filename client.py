@@ -33,18 +33,6 @@ class Client:
         """
         return len(self.user_id) > 0
     
-    def check_server_health(self):
-        """
-        Helper function to check if the server is up. Raises an error if not,
-        return True if all is good.
-        """
-        health_message = coding.marshal_health_request(schema.Request(self.user_id))
-        self.isocket.sendall(health_message)
-        data = self.isocket.recv(1024)
-        if not data or not coding.unmarshal_response(data).success:
-            raise Exception("Server is not healthy")
-        return True
-    
     def clear(self):
         """
         Clear the screen
@@ -62,23 +50,17 @@ class Client:
         A function that will be run in a separate thread to watch for messages
         NOTE: Takes advantage of the ThreadPoolExecutor to run this function
         """
-
-        try:
-            while self.wsocket:
-                # Before receiving a message the server checks health of connection
-                self.wsocket.recv(1024)
-                # Send a health check to confirm alive-ness
-                health_message = coding.marshal_health_request(schema.Request(self.user_id))
-                self.wsocket.sendall(health_message)
-                # Now we can receive the message
-                data = self.wsocket.recv(1024)
-                if not data:
-                    raise Exception("Server closed connection")
-                message = coding.unmarshal_response(data)
+        while True:
+            message = coding.marshal_get_request(schema.Request(self.user_id))
+            self.wsocket.sendall(message)
+            data = self.wsocket.recv(1024)
+            if not data:
+                raise Exception("Server closed connection")
+            message = coding.unmarshal_response(data)
+            if message.success:
                 utils.print_msg_box(message)
-        except Exception:
-            self.clear()
-    
+            time.sleep(1)
+
     def subscribe(self):
         """
         Subscribe to the server to receive messages
@@ -88,18 +70,6 @@ class Client:
             return
         self.wsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.wsocket.connect((self.host, self.port))
-        try:
-            message = coding.marshal_subscribe_request(schema.Request(self.user_id))
-            self.wsocket.sendall(message)
-            data = self.wsocket.recv(1024)
-            if not data:
-                raise Exception("Server closed connection")
-            resp = coding.unmarshal_response(data)
-            if not resp.success:
-                raise Exception(resp.error_message)
-        except:
-            self.clear()
-            return
         self.executor.submit(self.watch_messages)
 
     def handle_create(self):
@@ -262,7 +232,6 @@ class Client:
         It resets all the sockets and logs the user out, not allowing them to do
         anything until they reconnect.
         """
-        self.clear()
         if not initial:
             utils.print_error("Error: Lost connection to server.")
             utils.print_error("You have been logged out. When/if connection is re-established, you will need to manually log back in.")
@@ -294,6 +263,10 @@ class Client:
                     self.reconnect()
                     continue
                 raw_input = input("> Enter a command: ")
+                if raw_input[:5] == "sleep":
+                    # NOTE: Special logic to help with testing
+                    time.sleep(int(raw_input[6:]))
+                    continue
                 handler = self.parse_input(raw_input)
                 if handler:
                     handler()

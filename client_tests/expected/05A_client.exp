@@ -1,0 +1,17 @@
+Enter Server Host Address: [92mConnected to server![00m
+> Enter a command: [91mError: You must be logged in to list users[00m
+> Enter a command: > Enter a username: [92mSuccess! Logged in as alice[00m
+> Enter a command: > Input a text filter: > Input a page to return: [94m4 users on page 0 matching ''[00m
+alice
+bob
+carson
+dave
+> Enter a command: > Input a text filter: > Input a page to return: [94m0 users on page 1 matching ''[00m
+> Enter a command: > Input a text filter: > Input a page to return: [94m3 users on page 0 matching 'a'[00m
+alice
+carson
+dave
+> Enter a command: > Input a text filter: > Input a page to return: [94m1 users on page 0 matching 'alice'[00m
+alice
+> Enter a command: > Input a text filter: > Input a page to return: [94m0 users on page 0 matching 'eve'[00m
+> Enter a command: 

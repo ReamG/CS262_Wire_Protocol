@@ -5,9 +5,10 @@ from concurrent import futures
 
 import schema
 import coding
-
+import utils
 import time
 import pdb
+from threading import Lock, Event
 
 HOST = ""  # Standard loopback interface address (localhost)
 PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
@@ -25,89 +26,84 @@ class Server:
         self.port = port
         self.executor = executor
         self.users = {}
+        self.user_lock = Lock()
         self.msgs_cache = {}
+        self.msgs_lock = Lock()
         self.user_events = {}
         self.ACCOUNT_PAGE_SIZE = 4
         self.alive = True
+
     
     def handle_create(self, request):
         """
         Creates a new account. Fails if the user_id already exists.
+        NOTE: Requires the user_lock to be held
         """
-        if request.user_id in self.users:
-            return schema.Response(user_id=request.user_id, success=False, error_message="User already exists")
-        new_account = schema.Account(user_id=request.user_id, is_logged_in=True)
-        self.users[new_account.user_id] = new_account
-        self.msgs_cache[new_account.user_id] = []
-        return schema.Response(user_id=request.user_id, success=True, error_message="")
+        with self.user_lock:
+            if request.user_id in self.users:
+                return schema.Response(user_id=request.user_id, success=False, error_message="User already exists")
+            new_account = schema.Account(user_id=request.user_id, is_logged_in=True)
+            self.users[new_account.user_id] = new_account
+            self.msgs_cache[new_account.user_id] = []
+            self.user_events[new_account.user_id] = Event()
+            return schema.Response(user_id=request.user_id, success=True, error_message="")
     
     def handle_login(self, request):
         """
         Logs in an existing account. Fails if the user_id does not exist or
         if the user is already logged in.
+        NOTE: Requires the user_lock to be held
         """
-        if not request.user_id in self.users:
-            return schema.Response(user_id=request.user_id, success=False, error_message="User does not exist")
-        if self.users[request.user_id].is_logged_in:
-            return schema.Response(user_id=request.user_id, success=False, error_message="User already logged in")
-        self.users[request.user_id].is_logged_in = True
+        with self.user_lock:
+            if not request.user_id in self.users:
+                return schema.Response(user_id=request.user_id, success=False, error_message="User does not exist")
+            if self.users[request.user_id].is_logged_in:
+                return schema.Response(user_id=request.user_id, success=False, error_message="User already logged in")
+            self.users[request.user_id].is_logged_in = True
+        with self.msgs_lock:
+            # On login make sure the event is set to true
+            if len(self.msgs_cache[request.user_id]) > 0:
+                self.user_events[request.user_id].set()
         return schema.Response(user_id=request.user_id, success=True, error_message="")
     
     def handle_delete(self, request):
         """
         Deletes an existing account. Fails if the user_id does not exist.
+        NOTE: Requires the user_lock to be held
         """
-        if not request.user_id in self.users:
-            return schema.Response(user_id=request.user_id, success=False, error_message="User does not exist")
-        del self.users[request.user_id]
-        del self.msgs_cache[request.user_id]
-        return schema.Response(user_id=request.user_id, success=True, error_message="")
+        with self.user_lock:
+            if not request.user_id in self.users:
+                return schema.Response(user_id=request.user_id, success=False, error_message="User does not exist")
+            del self.users[request.user_id]
+            del self.msgs_cache[request.user_id]
+            del self.user_events[request.user_id]
+            return schema.Response(user_id=request.user_id, success=True, error_message="")
     
     def handle_list(self, request):
         """
         Lists all accounts that match the given wildcard.
         NOTE: "" will match all accounts. Other strings will simply use
         Python's built-in "in" operator.
+        NOTE: Requires the user_lock to be held
         """
-        satisfying = filter(lambda user : request.wildcard in user.user_id, self.users.values())
-        limited_to_page = list(satisfying)[request.page * self.ACCOUNT_PAGE_SIZE : (request.page + 1) * self.ACCOUNT_PAGE_SIZE]
-        return schema.ListResponse(user_id=request.user_id, success=True, error_message="", accounts=limited_to_page)
+        with self.user_lock:
+            satisfying = filter(lambda user : request.wildcard in user.user_id, self.users.values())
+            limited_to_page = list(satisfying)[request.page * self.ACCOUNT_PAGE_SIZE : (request.page + 1) * self.ACCOUNT_PAGE_SIZE]
+            return schema.ListResponse(user_id=request.user_id, success=True, error_message="", accounts=limited_to_page)
     
-    def handle_subscribe(self, request, conn):
+    def handle_get_messages(self, request):
         """
-        Turns this thread into one that sits and waits for messages to 
-        pass on to the client.
+        Gets the messages for a given user
         """
-        if not request.user_id in self.users:
-            # Inform the client that the subscription wasn't successful
-            error_resp = schema.Response(user_id=request.user_id, success=False, error_message="User does not exist")
-            message = coding.marshal_response(error_resp)
-            conn.sendall(message)
-            return
-        
-        # Inform the client that the subscription was successful
-        success_resp = schema.Response(user_id=request.user_id, success=True, error_message="")
-        message = coding.marshal_response(success_resp)
-        conn.sendall(message)
-
-        while True:
-            if not self.alive:
-                break
+        sending = None
+        with self.msgs_lock:
             if len(self.msgs_cache[request.user_id]) > 0:
-                # Confirm that the client is stil there
-                try:
-                    health_message = coding.marshal_health_request(schema.Request(request.user_id))
-                    conn.sendall(health_message)
-                    data = conn.recv(1024)
-                    if not data:
-                        raise Exception("Client closed connection")
-                except:
-                    raise Exception("Client closed connection")
-                message_obj = self.msgs_cache[request.user_id][0]
+                sending = self.msgs_cache[request.user_id][0]
                 self.msgs_cache[request.user_id] = self.msgs_cache[request.user_id][1:]
-                message = coding.marshal_message_response(message_obj)
-                conn.sendall(message)
-            time.sleep(1)
+        if sending:
+            return sending
+        else:
+            return schema.Message(author_id=request.user_id, recipient_id=request.user_id, text="", success=False)
     
     def handle_send(self, request):
         """
@@ -116,8 +112,10 @@ class Server:
         """
         if not request.recipient_id in self.users:
             return schema.Response(user_id=request.user_id, success=False, error_message="User does not exist")
-        message = schema.Message(author_id=request.user_id, recipient_id=request.recipient_id, text=request.text)
-        self.msgs_cache[request.recipient_id].append(message)
+        message = schema.Message(author_id=request.user_id, recipient_id=request.recipient_id, text=request.text, success=True)
+        with self.msgs_lock:
+            self.msgs_cache[request.recipient_id].append(message)
+        self.user_events[request.recipient_id].set()
         return schema.Response(user_id=request.user_id, success=True, error_message="")
     
     def handle_request_with_op(self, request, op):
@@ -130,6 +128,8 @@ class Server:
             return self.handle_login(request)
         if op == "delete":
             return self.handle_delete(request)
+        if op == "get":
+            return self.handle_get_messages(request)
         if op == "list":
             return self.handle_list(request)
         if op == "send":
@@ -151,16 +151,19 @@ class Server:
                     break
                 if not data:
                     raise Exception("Client closed connection")
-                request, op = coding.unmarshal_request(data)
-                if op == "subscribe":
-                    self.handle_subscribe(request, conn)
-                    break
+                try:
+                    request, op = coding.unmarshal_request(data)
+                except:
+                    utils.print_error("Error: Invalid request")
+                    continue
                 resp = self.handle_request_with_op(request, op)
                 if (op == "create" or op == "login") and resp.success:
                     user_id = request.user_id
                 # Send back using the right encoding
                 if op == "list":
                     data = coding.marshal_list_response(resp)
+                elif op == "get":
+                    data = coding.marshal_message_response(resp)
                 else:
                     data = coding.marshal_response(resp)
                 try:
@@ -173,6 +176,7 @@ class Server:
                 data = coding.marshal_response(resp)
                 if len(user_id) > 0:
                     self.users[user_id].is_logged_in = False
+                    self.user_events[user_id].set()
                 break
         conn.close()
 
@@ -180,7 +184,6 @@ class Server:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
             s.listen()
-            s.settimeout(5)
             while True:
                 try:
                     if not self.alive:
