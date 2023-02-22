@@ -146,6 +146,7 @@ class Server:
                 break
             # Continue to receive data until the connection is closed
             try:
+                print("hiii")
                 data = conn.recv(1024)
                 if not self.alive:
                     break
@@ -171,23 +172,27 @@ class Server:
                 print("Error:", e.args[0])
                 resp = schema.Response(user_id=user_id, success=False, error_message=str(e.args[0]))
                 data = coding.marshal_response(resp)
-                try:
-                    conn.sendall(data)
-                except:
-                    if len(user_id) > 0:
-                        self.users[user_id].is_logged_in = False
-                    break
+                if len(user_id) > 0:
+                    self.users[user_id].is_logged_in = False
+                break
         conn.close()
 
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
             s.listen()
+            s.settimeout(5)
             while True:
-                if not self.alive:
+                try:
+                    if not self.alive:
+                        break
+                    conn, addr = s.accept()
+                    if conn:
+                        self.executor.submit(self.handle_connection, conn, addr)
+                except KeyboardInterrupt:
                     break
-                conn, addr = s.accept()
-                self.executor.submit(self.handle_connection, conn, addr)
+                except:
+                    pass
 
 if __name__ == "__main__":
     try:
