@@ -89,6 +89,9 @@ class Client:
         if len(username) > 8:
             utils.print_error("Error: username cannot be longer than 8 characters")
             return
+        if "," in username:
+            utils.print_error("Error: username cannot contain commas")
+            return
         message = coding.marshal_create_request(schema.Request(username))
         self.isocket.sendall(message)
         data = self.isocket.recv(1024)

@@ -148,8 +148,6 @@ def unmarshal_request(data: bytes):
         page = unpad(data[18:26])
         page_num = int(page)
         return ListRequest(user_id, wildcard, page_num), op
-    elif op == "subscribe":
-        return Request(user_id), op
     elif op == "get":
         return Request(user_id), op
     elif op == "send":
