@@ -168,21 +168,15 @@ class Server:
                 except:
                     raise Exception("Client closed connection")
             except Exception as e:
-                if (e.args[0] == "Client closed connection"):
-                    print(e.args[0])
+                print("Error:", e.args[0])
+                resp = schema.Response(user_id=user_id, success=False, error_message=str(e.args[0]))
+                data = coding.marshal_response(resp)
+                try:
+                    conn.sendall(data)
+                except:
                     if len(user_id) > 0:
                         self.users[user_id].is_logged_in = False
                     break
-                else:
-                    print("Error:", e.args[0])
-                    resp = schema.Response(user_id=user_id, success=False, error_message=e.args[0])
-                    data = coding.marshal_response(resp)
-                    try:
-                        conn.sendall(data)
-                    except:
-                        if len(user_id) > 0:
-                            self.users[user_id].is_logged_in = False
-                        break
         conn.close()
 
     def start(self):
