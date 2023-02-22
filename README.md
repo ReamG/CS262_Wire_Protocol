@@ -1,6 +1,19 @@
 # Project One - Chat
 
+NOTE: In order to prevent this file from getting _too_ big we split a lot of the documentation into the `docs` subfolder. This is referenced in some places below, so please feel free to dive into the `docs` folder for more specific info and design justification.
+
 ## Table of Contents:
+
+- [Overview](#overview)
+- [Wire Protocol](#wire-protocol)
+- [Part One](#part-one)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Usage](#usage)
+  - [IMPORTANT NOTES](#important-notes)
+- [Part Two](#part-two)
+  - [Setup](#setup2)
+  - [Usage](#usage2)
 
 ## Overview
 
@@ -8,9 +21,13 @@ The files used for part one are stored in this directory, aptly named `server.py
 
 ## Wire Protocol:
 
-TODO: Mark.
+Please check out `docs/wire_protocol.md`.
 
 ## Part One
+
+### Prerequisites
+
+Before attempting to run the client/server, please go to `docs/installation` and make sure you installed all the modules required.
 
 ### Setup
 
@@ -30,6 +47,8 @@ Run `python server.py`.
 Run `python client.py`. This will prompt your for the host address, which is the value that you copied while running the server.
 
 ### Usage
+
+This is a high-level overview of how to use the client. For more information about the adherence to the specs please check out `docs/implementation.md`.
 
 In general, the program works by asking you for a command, and then asking you for inputs to that command. For instance
 
@@ -61,7 +80,8 @@ user5
 user6
 ```
 
-- `send` - Will first prompt you for a recipient id, and then a message. The recipient id is subject to the same length constraints as above, and the message can be at most 280 characters. It will return an error from the server if something goes wrong (like a non-existent user). If all is good, you'll see a success message printed to the terminal. -`delete` - Deletes the account of the currently logged in user. If there were any remaining messages, they are deleted, never to be seen again.
+- `send` - Will first prompt you for a recipient id, and then a message. The recipient id is subject to the same length constraints as above, and the message can be at most 280 characters. It will return an error from the server if something goes wrong (like a non-existent user). If all is good, you'll see a success message printed to the terminal.
+- `delete` - Deletes the account of the currently logged in user. If there were any remaining messages, they are deleted, never to be seen again.
 
 ### IMPORTANT NOTES
 
@@ -72,13 +92,9 @@ user6
 - Our interpretation of "deliver undelivered messages" is "As soon as a user has undelivered messages, deliver them." This means if a user exists but is logged out and gets messages, when they log back in they get all their unread messages delivered at once. _There is no need for them to call this explicitly_. Building this in as a natural feature of logging in felt like the cleanest and most natural way to handle this.
 - Our interpretation of "delete an account" only allows people to delete their own account. **No one is allowed to delete other peoples accounts**. When an account is deleted, that person is logged out, and any messages they might have had are deleted, never to be seen. NOTE: based on how we implemented the above with messages always being delivered ASAP, it's very unlikely a person actually has unread messages when they delete their account. But again, this was (in out opinion) by far the cleanest way to do this and fulfils the specs.
 
-### Testing
-
-TODO mark
-
 ## Part Two
 
-### Setup
+### Setup2
 
 Go ahead and `cd part2`. You'll use the same ip address as in part one.
 
@@ -86,7 +102,7 @@ Run `python server.py`.
 
 Run `python client.py`.
 
-### Usage
+### Usage2
 
 The valid commands you can run in part two are the exact same, with the following differences in behavior:
 
@@ -95,10 +111,10 @@ The valid commands you can run in part two are the exact same, with the followin
 - `list` no longer requires a page. It returns all satisfying requests in one value always.
 - You might have noticed that sometimes it takes half a second to deliver messages in part one. This is because part one uses polling to detect new messages, whereas part two uses blocking.
 
-### Differences from Part One
+## Testing
 
-### Testing
+Please consult `docs/testing.md` to learn more about the automated tests we wrote for the client and server.
 
-TODO Mark
+## gRPC Reflections
 
-## Overview of Files
+Please consult `docs/gRPC_reflections.md` to learn more.
