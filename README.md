@@ -24,7 +24,7 @@ NOTE: In order to prevent this file from getting _too_ big we split a lot of the
 
 ### Files
 
-The files used for part one are stored in this directory, aptly named `server.py` (implements server functions and creates a server when run), `client.py` (implements client functions and creates a client when run), `schema.py` (classes and data types for our server and client implementations), and `coding.py` (marshalling). The code for part two is stored in the `part2` folder and are similarly named.  
+The files used for part one are stored in this directory, aptly named `server.py` (implements server functions and creates a server when run), `client.py` (implements client functions and creates a client when run), `schema.py` (classes and data types for our server and client implementations), and `coding.py` (marshalling). The code for part two is stored in the `part2` folder and are similarly named.
 
 ### Architecture
 
@@ -128,7 +128,7 @@ Please consult `docs/testing.md` to learn more about the automated tests we wrot
 
 ## gRPC Reflections
 
-Please consult `docs/gRPC_reflections.md` to learn more.
+Included at the end of the engineering notebook below.
 
 ## Engineering Notebook
 

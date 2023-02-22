@@ -20,4 +20,4 @@ Consult [this link](https://mothergeo-py.readthedocs.io/en/latest/development/ho
 
 ## Install the dependencies
 
-Simply run `pip install requirements.txt`.
+Simply run `pip install -r requirements.txt`.
