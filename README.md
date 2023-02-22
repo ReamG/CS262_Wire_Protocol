@@ -128,7 +128,7 @@ Please consult `docs/testing.md` to learn more about the automated tests we wrot
 
 ## gRPC Reflections
 
-Included at the end of the engineering notebook below.
+Included at the end of the engineering notebook below. ([Direct Link](https://berry-sugar-a23.notion.site/gRPC-reflections-faacb484548c40318c38709f61e392bf))
 
 ## Engineering Notebook
 
