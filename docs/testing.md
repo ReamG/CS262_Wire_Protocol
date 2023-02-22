@@ -1,5 +1,22 @@
 # Testing
 
+## Unit/Server Tests
+
+For server tests we have written a suit of tests in the folder `server_tests` that utalize `pytest`. There are two files, `test_server.py` which tests our server implementation for part 1, and `test_grpc_server.py` which tests our server implementation for part 2. These tests are unit tests that focus on ensuring the server responds properly to the requests it receives. Furthermore, this behavior is verified with the integration tests implemented in the folder `client_tests`. 
+
+### How to run
+
+To run this test suite, ensure you have installed the requirements in `requirements.txt`  
+
+Then switch into the `server_tests` folder 
+```
+cd unit_tests
+```  
+Then simply run the command:  
+```
+pytest
+```
+
 ## Integration/Client Tests
 
 In the part one folder (root) and part two folder you'll find a folder named `client_tests`. This contains automated tests that we wrote to test the integration of the client and the server.
