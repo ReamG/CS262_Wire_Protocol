@@ -10,7 +10,7 @@ from concurrent import futures
 import pdb
 import time
 
-HOST = ""  # The server's hostname or IP address
+HOST = "10.250.132.245"  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
 
 class Client:

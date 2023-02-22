@@ -139,7 +139,7 @@ class Server:
         return None
     
     def handle_connection(self, conn, addr):
-        print("Connected new client")
+        print("New connection")
         user_id = ""
         while True:
             if not self.alive:
