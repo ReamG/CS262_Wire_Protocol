@@ -5,6 +5,8 @@ NOTE: In order to prevent this file from getting _too_ big we split a lot of the
 ## Table of Contents:
 
 - [Overview](#overview)
+  - [Files](#files)
+  - [Architecture](#architecture)
 - [Wire Protocol](#wire-protocol)
 - [Part One](#part-one)
   - [Prerequisites](#prerequisites)
@@ -14,10 +16,18 @@ NOTE: In order to prevent this file from getting _too_ big we split a lot of the
 - [Part Two](#part-two)
   - [Setup](#setup2)
   - [Usage](#usage2)
+- [Testing](#testing)
+- [gRPC Reflections](#grpc-reflections)
 
 ## Overview
 
+### Files
+
 The files used for part one are stored in this directory, aptly named `server.py`, `client.py`, `schema.py` (classes and data types), and `coding.py` (marshalling). The code for part two is stored in the `part2` folder and are similarly named.
+
+### Architecture
+
+Please consult `docs/architecture.md` for more information. IMPORTANT: This has pretty pictures.
 
 ## Wire Protocol:
 
