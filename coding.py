@@ -127,7 +127,7 @@ def marshal_send_request(req: SendRequest):
         pad_to_length(req.user_id, 8),
         OP_TO_CODE_MAP["send"],
         pad_to_length(req.recipient_id, 8),
-        pad_to_length(req.text, 64),
+        pad_to_length(req.text, MAX_MESSAGE_LENGTH),
     ).encode()
 
 def unmarshal_request(data: bytes):
