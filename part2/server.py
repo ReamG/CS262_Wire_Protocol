@@ -1,6 +1,6 @@
 # echo-server.py
 
-from threading import Event
+from threading import Event, Lock
 from concurrent import futures
 
 import grpc
@@ -20,7 +20,9 @@ class ChatHandlerServicer(object):
         """
         self.executor = executor
         self.users = {}
+        self.user_lock = Lock()
         self.msgs_cache = {}
+        self.msgs_lock = Lock()
         self.user_events = {}
 
     def Create(self, request, context):
@@ -30,12 +32,14 @@ class ChatHandlerServicer(object):
         Subscribe method, which sets up necessary precautions for
         sudden disconnects.
         """
-        if request.user_id in self.users:
-            return  schema.BasicResponse(success=False, error_message="user_id already exists")
-        new_account = schema.Account(user_id=request.user_id, is_logged_in=True)
-        self.users[new_account.user_id] = new_account
-        self.msgs_cache[new_account.user_id] = []
-        self.user_events[new_account.user_id] = Event()
+        with self.user_lock:
+            if request.user_id in self.users:
+                return  schema.BasicResponse(success=False, error_message="user_id already exists")
+            new_account = schema.Account(user_id=request.user_id, is_logged_in=True)
+            self.users[new_account.user_id] = new_account
+            self.user_events[new_account.user_id] = Event()
+        with self.msgs_lock:
+            self.msgs_cache[new_account.user_id] = []
         return schema.BasicResponse(success=True, error_message="")
     
     def Login(self, request, context):
@@ -43,12 +47,13 @@ class ChatHandlerServicer(object):
         Logs in an existing account. Fails if the user_id does not exist or
         if the user is already logged in.
         """
-        if request.user_id in self.users:
-            if self.users[request.user_id].is_logged_in:
-                return schema.BasicResponse(success=False, error_message="user_id already logged in")
-            self.users[request.user_id].is_logged_in = True
-            return schema.BasicResponse(success=True, error_message="")
-        return schema.BasicResponse(success=False, error_message="user_id does not exist. Try creating an account.")
+        with self.user_lock:
+            if request.user_id in self.users:
+                if self.users[request.user_id].is_logged_in:
+                    return schema.BasicResponse(success=False, error_message="user_id already logged in")
+                self.users[request.user_id].is_logged_in = True
+                return schema.BasicResponse(success=True, error_message="")
+            return schema.BasicResponse(success=False, error_message="user_id does not exist. Try creating an account.")
     
     def List(self, request, context):
         """
@@ -56,20 +61,23 @@ class ChatHandlerServicer(object):
         NOTE: "" will match all accounts. Other strings will simply use
         Python's built-in "in" operator.
         """
-        satisfying = filter(lambda user : request.wildcard in user.user_id, self.users.values())
+        with self.user_lock:
+            satisfying = filter(lambda user : request.wildcard in user.user_id, self.users.values())
         return schema.ListResponse(success=True, accounts=satisfying)
 
     def Delete(self, request, context):
         """
         Deletes an existing account. Fails if the user_id does not exist.
         """
-        if not request.user_id in self.users:
-            return schema.BasicResponse(success=False, error_message="user_id does not exist.")
-        self.users[request.user_id].is_logged_in = False
-        self.user_events[request.user_id].set()
-        del self.users[request.user_id]
-        del self.msgs_cache[request.user_id]
-        del self.user_events[request.user_id]
+        with self.user_lock:
+            if not request.user_id in self.users:
+                return schema.BasicResponse(success=False, error_message="user_id does not exist.")
+            self.users[request.user_id].is_logged_in = False
+            self.user_events[request.user_id].set()
+            del self.users[request.user_id]
+            del self.user_events[request.user_id]
+        with self.msgs_lock:
+            del self.msgs_cache[request.user_id]
         
         return schema.BasicResponse(success=True, error_message="")
     
@@ -81,29 +89,41 @@ class ChatHandlerServicer(object):
         we enforce that only one subscribe thread can be active at a time
         for a given user.
         """
-        if not request.user_id in self.users:
-            return schema.BasicResponse(success=False, error_message="user_id does not exist.")
-        if not self.users[request.user_id].is_logged_in:
-            raise Exception("Must be logged in to subscribe")
+        with self.user_lock:
+            if not request.user_id in self.users:
+                return schema.BasicResponse(success=False, error_message="user_id does not exist.")
+            if not self.users[request.user_id].is_logged_in:
+                raise Exception("Must be logged in to subscribe")
 
         # Helper function to clean up when a client disconnects
         def log_out():
-            self.users[request.user_id].is_logged_in = False
+            with self.user_lock:
+                self.users[request.user_id].is_logged_in = False
             self.user_events[request.user_id].set()
         context.add_callback(log_out)
 
         # Block until there is a message, then yield it to client and repeat
-        while self.users[request.user_id].is_logged_in:
+        is_logged_in = False
+        with self.user_lock:
+            is_logged_in = self.users[request.user_id].is_logged_in
+        while is_logged_in:
             try:
                 self.user_events[request.user_id].wait()
                 self.user_events[request.user_id].clear()
-                while len(self.msgs_cache[request.user_id]) > 0:
-                    yield self.msgs_cache[request.user_id][0]
-                    self.msgs_cache[request.user_id] = self.msgs_cache[request.user_id][1:]
+                sending = []
+                with self.msgs_lock:
+                    while len(self.msgs_cache[request.user_id]) > 0:
+                        sending.append(self.msgs_cache[request.user_id][0])
+                        self.msgs_cache[request.user_id] = self.msgs_cache[request.user_id][1:]
+                for msg in sending:
+                    yield msg
+                with self.user_lock:
+                    is_logged_in = self.users[request.user_id].is_logged_in
             except:
                 self.users[request.user_id].is_logged_in = False
                 self.user_events[request.user_id].clear()
                 break
+
         
         return schema.BasicResponse(success=False, error_message="subscription thread dying.")
 
@@ -115,14 +135,15 @@ class ChatHandlerServicer(object):
         the subscribe thread handles delivery immediately, or the next
         time the recipient logs in/subscribes, they will receive the message.
         """
-        if not request.recipient_id in self.msgs_cache:
-            return schema.BasicResponse(success=False, error_message="Recipient does not exist")
-        if not request.author_id in self.users:
-            return schema.BasicResponse(success=False, error_message="Author does not exist")
-        
-        self.msgs_cache[request.recipient_id].append(request)
-        self.user_events[request.recipient_id].set()
-        return schema.BasicResponse(success=True, error_message="")
+        with self.user_lock:
+            if not request.author_id in self.users:
+                return schema.BasicResponse(success=False, error_message="Author does not exist")
+        with self.msgs_lock:
+            if not request.recipient_id in self.msgs_cache:
+                return schema.BasicResponse(success=False, error_message="Recipient does not exist")
+            self.msgs_cache[request.recipient_id].append(request)
+            self.user_events[request.recipient_id].set()
+            return schema.BasicResponse(success=True, error_message="")
 
 def serve():
     executor = futures.ThreadPoolExecutor()

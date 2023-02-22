@@ -1,0 +1,6 @@
+Enter Server Host Address: [92mConnected to server![00m
+> Enter a command: > Enter a username: [92mSuccess! Logged in as bob[00m
+> Enter a command: > Input a text filter: > Input a page to return: [94m0 users on page 0 matching 'alice'[00m
+> Enter a command: > Recipient id: > What would you like to say?
+[91mError: User does not exist[00m
+> Enter a command: 

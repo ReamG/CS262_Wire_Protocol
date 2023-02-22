@@ -1,0 +1,9 @@
+login
+alice
+sleep 2
+send
+bob
+good. how are you?
+sleep 4
+sleep 4
+sleep 100

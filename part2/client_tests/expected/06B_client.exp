@@ -1,0 +1,14 @@
+Enter server ip address: [92mConnection to server is good[00m
+> Enter a command: > Enter a command: > Enter a username: [92mSuccess! Logged in as bob[00m
+> Enter a command: > Recipient id: > What would you like to say?
+[92mSuccess! Message sent[00m
+> Enter a command: 
+╔═════════════════════════════╗
+║ From: alice                 ║
+║ Message: good. how are you? ║
+╚═════════════════════════════╝
+> Enter a command: > Recipient id: > What would you like to say?
+[91mError: Message must be less than 280 characters[00m
+> Enter a command: > Recipient id: > What would you like to say?
+[92mSuccess! Message sent[00m
+> Enter a command: 

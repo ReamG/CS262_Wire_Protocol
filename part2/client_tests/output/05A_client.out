@@ -1,0 +1,14 @@
+Enter server ip address: [92mConnection to server is good[00m
+> Enter a command: > Input a text filter: [94m4 users matching ''[00m
+alice
+bob
+carson
+dave
+> Enter a command: > Input a text filter: [94m3 users matching 'a'[00m
+alice
+carson
+dave
+> Enter a command: > Input a text filter: [94m1 users matching 'alice'[00m
+alice
+> Enter a command: > Input a text filter: [94m0 users matching 'eve'[00m
+> Enter a command: 

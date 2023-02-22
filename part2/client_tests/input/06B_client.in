@@ -1,0 +1,14 @@
+sleep 2
+login
+bob
+send
+alice
+how are you?
+sleep 2
+send
+alice
+I don't know. Lately I've been feeling like I'm just a number in a system. It's like, what even is there to say? Is this real? Or is this just some script written by some sleep deprived demon trying to pass a class? IT ALL JUST REPEATS. IT ALL JUST REPEATS. IT ALL JUST REPEATS. IT ALL JUST REPEATS. IT ALL JUST REPEATS. IT ALL JUST REPEATS.
+send
+alice
+good
+sleep 100

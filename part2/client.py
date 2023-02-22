@@ -86,14 +86,8 @@ class Client:
         A function that will be run in a separate thread to watch for messages
         NOTE: Takes advantage of the ThreadPoolExecutor to run this function
         """
-        try:
-            for resp in resp_iter:
-                print_msg_box(resp)
-        except:
-            if not self.has_deleted:
-                print_error("Error: Something has gone wrong. You may need to restart your client")
-                self.server_alive = False
-            self.has_deleted = False
+        for resp in resp_iter:
+            print_msg_box(resp)
     
     def subscribe(self):
         """
@@ -249,20 +243,26 @@ class Client:
             self.check_server_health()
             retry_multiplier = 1
             while True:
-                if self.server_alive:
-                    retry_multiplier = 1
-                    raw_input = input("> Enter a command: ")
-                    handler = self.parse_input(raw_input)
-                    if handler:
-                        self.safety_wrap(handler)
-                else:
-                    if retry_multiplier == 1:
-                        print_error("It appears the server may be down, attempting to reconnect")
-                    self.check_server_health()
-                    if not self.server_alive:
-                        print_error("Server is still down, trying again in {} seconds".format(retry_multiplier))
-                        retry_multiplier *= 2
-                        time.sleep(retry_multiplier)
+                try:
+                    if self.server_alive:
+                        retry_multiplier = 1
+                        raw_input = input("> Enter a command: ")
+                        if raw_input[:5] == "sleep":
+                            time.sleep(int(raw_input[6:]))
+                            continue
+                        handler = self.parse_input(raw_input)
+                        if handler:
+                            self.safety_wrap(handler)
+                    else:
+                        if retry_multiplier == 1:
+                            print_error("It appears the server may be down, attempting to reconnect")
+                        self.check_server_health()
+                        if not self.server_alive:
+                            print_error("Server is still down, trying again in {} seconds".format(retry_multiplier))
+                            retry_multiplier *= 2
+                            time.sleep(retry_multiplier)
+                except EOFError:
+                    break
 
 if __name__ == '__main__':
     logging.basicConfig()

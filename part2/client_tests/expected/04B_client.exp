@@ -1,0 +1,6 @@
+Enter server ip address: [92mConnection to server is good[00m
+> Enter a command: > Enter a username: [91mError: user_id already logged in[00m
+> Enter a command: > Enter a username: [91mError: username cannot be empty[00m
+> Enter a command: > Enter a username: [91mError: user_id does not exist. Try creating an account.[00m
+> Enter a command: > Enter a username: [92mSuccess! Logged in as bob[00m
+> Enter a command: 
