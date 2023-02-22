@@ -1,4 +1,4 @@
-# Test 03 - Test account creation
+# Test 08 - Test account deletion
 # A - Creates an account
 # B - Lists accounts and sees A
 # B - Sends a message to A
