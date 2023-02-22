@@ -146,7 +146,6 @@ class Server:
                 break
             # Continue to receive data until the connection is closed
             try:
-                print("hiii")
                 data = conn.recv(1024)
                 if not self.alive:
                     break
