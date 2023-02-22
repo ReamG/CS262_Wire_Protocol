@@ -6,20 +6,22 @@ source ./_utils.sh
 
 start_server $TEST_NUM
 
-bg_client $TEST_NUM A 10
-sleep 1
-bg_client $TEST_NUM B 10
-sleep 1
-bg_client $TEST_NUM C 10
-sleep 1
-bg_client $TEST_NUM D 10
-
-sleep 2
+bg_client $TEST_NUM A 6
+sleep 0.5
+bg_client $TEST_NUM B 6
+sleep 0.5
+bg_client $TEST_NUM C 6
+sleep 0.5
+bg_client $TEST_NUM D 6
+sleep 0.5
 
 stop_clients
+sleep 1
 stop_server
+sleep 1
 
-server_result=$(verify_server_output $TEST_NUM)
+
+server_result=$(verify_server_output $TEST_NUM trim_newlines)
 
 if [ $server_result -eq 1 ]
 then

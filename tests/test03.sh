@@ -6,18 +6,16 @@
 # B - Tries to create an account with a username that's too long
 # B - Creates a second account
 
-# NOTE: The server is not killed after this test
-
 TEST_NUM=03
 
 source ./_utils.sh
 
-start_server $TEST_NUM
+start_server
 
-fg_client $TEST_NUM A 10
-fg_client $TEST_NUM B 10
+fg_client $TEST_NUM A
+fg_client $TEST_NUM B
 
-sleep 2
+sleep 1
 
 stop_server
 

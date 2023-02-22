@@ -6,7 +6,7 @@ source ./_utils.sh
 
 start_server $TEST_NUM
 
-run_client $TEST_NUM
+fg_client $TEST_NUM
 
 stop_server
 
