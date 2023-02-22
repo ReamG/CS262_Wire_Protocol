@@ -51,6 +51,9 @@ def post_accounts(str):
     """
     Turns a string of accounts into a list
     """
+    if str == "":
+        return []
+    
     return str.split(",")
 
 def marshal_health_request(req: Request):
