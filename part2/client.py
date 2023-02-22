@@ -244,7 +244,7 @@ class Client:
         return None
 
     def run(self):
-        with grpc.insecure_channel('10.250.132.245:50051') as channel:
+        with grpc.insecure_channel(input("Enter server ip address: ") + ':50051') as channel:
             self.stub = services.ChatHandlerStub(channel=channel)
             self.check_server_health()
             retry_multiplier = 1
