@@ -2,7 +2,10 @@ import unittest
 from google.protobuf import message as _message
 import sys
 
-del sys.modules["server"]
+try:
+    del sys.modules["server"]
+except:
+    pass
 sys.path.insert(0, "..")
 import server
 import schema

@@ -3,6 +3,11 @@ import unittest
 from google.protobuf import message as _message
 import sys
 
+try:
+    del sys.modules["server"]
+except:
+    pass
+
 sys.path.insert(0, "../part2")
 import client
 import server
