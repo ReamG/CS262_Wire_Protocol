@@ -18,6 +18,7 @@ NOTE: In order to prevent this file from getting _too_ big we split a lot of the
   - [Usage](#usage2)
 - [Testing](#testing)
 - [gRPC Reflections](#grpc-reflections)
+- [Engineering Notebook](#engineering-notebook)
 
 ## Overview
 
@@ -128,3 +129,7 @@ Please consult `docs/testing.md` to learn more about the automated tests we wrot
 ## gRPC Reflections
 
 Please consult `docs/gRPC_reflections.md` to learn more.
+
+## Engineering Notebook
+
+[Link](https://berry-sugar-a23.notion.site/Engineering-Notebook-6519389b51434222b4f2abb640df4036)
