@@ -60,6 +60,7 @@ class Client:
         # is not good, no requests are processed until a successful health check
         # occurs.
         self.server_alive = False
+        self.has_deleted = False
     
     def is_logged_in(self):
         """
@@ -89,9 +90,10 @@ class Client:
             for resp in resp_iter:
                 print_msg_box(resp)
         except:
-            print_error("Error: Something has gone wrong. You may need to restart your client")
-            self.server_alive = False
-            
+            if not self.has_deleted:
+                print_error("Error: Something has gone wrong. You may need to restart your client")
+                self.server_alive = False
+            self.has_deleted = False
     
     def subscribe(self):
         """
@@ -117,6 +119,9 @@ class Client:
         username = input("> Enter a username: ")
         if len(username) <= 0:
             print_error("Error: username cannot be empty")
+            return
+        if len(username) >= 16:
+            print_error("Error: username cannot be longer than 16 characters")
             return
         resp = self.stub.Create(schema.Credentials(user_id=username))
         if not resp.success:
@@ -160,6 +165,7 @@ class Client:
         verify = input("Are you sure you want to delete your account? (y/n): ")
         if not verify == "y":
             return
+        self.has_deleted = True
         resp = self.stub.Delete(schema.Credentials(user_id=self.user_id))
         if resp.success:
             print_success("Success! Account deleted")
@@ -195,6 +201,9 @@ class Client:
             print_error("Error: Recipient cannot be empty")
             return
         text = input("> What would you like to say?\n")
+        if len(text) > 280:
+            print_error("Error: Message must be less than 280 characters")
+            return
         resp = self.stub.Send(schema.Message(
             author_id=self.user_id,
             recipient_id=recipient,
@@ -235,7 +244,7 @@ class Client:
         return None
 
     def run(self):
-        with grpc.insecure_channel('localhost:50051') as channel:
+        with grpc.insecure_channel('10.250.132.245:50051') as channel:
             self.stub = services.ChatHandlerStub(channel=channel)
             self.check_server_health()
             retry_multiplier = 1
